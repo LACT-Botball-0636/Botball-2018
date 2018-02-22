@@ -1,14 +1,4 @@
-#include <kipr/botball.h>
-
-#define MOT_LEFT 0
-#define MOT_RIGHT 1
-
-#define LEFT 0
-#define RIGHT 1
-
-#define WHITE 250	//Make this value GREATER THAN the sensor reading for white
-#define BLACK 2200 	//Make this value LESS than the sensor reading for black
-#define AVG WHITE+BLACK/2
+#include "lineFollow.h"
 
 void lineFollow(int speed, int ms, int side) {
     //speed is in %. If speed is 100, then it runs at 100%
@@ -28,22 +18,4 @@ void lineFollow(int speed, int ms, int side) {
             time++;
         }
     }
-}
-
-int main()
-{
-    int selection = 0;
-    while(selection == 0) {
-    	if (left_button()) {
-        	selection = 1;
-        } else if (right_button()) {
-        	selection = 2;
-        }
-    }
-    if (selection == 1)
-    	lineFollow(50, 3000, LEFT);
-    else 
-        lineFollow(100, 1500, RIGHT);
-    
-    return 0;
 }
