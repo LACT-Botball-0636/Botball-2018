@@ -49,8 +49,8 @@ void arm_pickup_poms();
 int camera_see_poms();
 void grab_poms();
 void setupTophat();
-void gate_close();
-void gate_open();
+void gate_close(int speed);
+void gate_open(int speed);
 void pom_release(); 
 
 //Set up instructions:
@@ -103,7 +103,6 @@ int main()
     disable_servos();
     return(0);*/
     //----------start setup----------//
-    setupTophat();
 
     //initial servo positions
     set_servo_position(SERVO_RIGHT, SERVO_RIGHT_DOWN);
@@ -111,13 +110,14 @@ int main()
 
     set_servo_position(SERVO_WRIST, SERVO_WRIST_FLAT);
 
-    //initialize servos and create and camera
+    //initialize servos and create
     enable_servos();
+    arm_middle();
+    setupTophat();
     create_connect();
+    //create_drive_full(); //UNCOMMENT DURING COMPETITION
 
     //square up after calibration
-
-    arm_middle();
     create_square_up(2000, -100);
 
     //start arm up, move claw down, slowly move arm down
@@ -135,8 +135,9 @@ int main()
     create_square_up(1300, -100);
 
     //go forward until middle of board then square up on outer wall and the middle line
-    create_forward(115, 100);
-    create_right(90, 100);
+    create_forward(85, 100); //115
+    create_detect_bump(50, 5000);
+    create_right(100, 100);
     create_square_up(1500, -100);
     create_forward(10, 100);
     create_square_up_line(50);
@@ -144,7 +145,6 @@ int main()
 
     //go forward and turn so on the line
     create_forward(20, 100);
-    //create_left(90, 100);
     while (analog(RIGHT_LINE) < rightBlack-300)
     {
         create_left(1,50);
@@ -159,71 +159,59 @@ int main()
 
     //Line follow to the three groups of poms and collect them
     arm_down();
-    gate_open();
+    gate_open(40);
 
-    create_line_follow(30, 50);
-    gate_close();
+    create_line_follow(40, 50);
+    gate_close(40);
     msleep(1000);
-    gate_open();
-
-    create_line_follow(15, 50);
-    gate_close();
-    msleep(1000);
-    gate_open();
-    
-    create_line_follow(15, 50);
-    gate_close();
-    msleep(1000);
-    gate_open();
+    gate_open(40);
 
     create_line_follow(15, 50);
-    gate_close();
+    gate_close(40);
     msleep(1000);
-    gate_open();
+    gate_open(40);
     
     create_line_follow(15, 50);
-    gate_close();
+    gate_close(40);
     msleep(1000);
-    gate_open();
+    gate_open(40);
+
+    create_line_follow(15, 50);
+    gate_close(40);
+    msleep(1000);
+    gate_open(40);
     
-    //create_line_follow(15, 50);
-    gate_close();
+    create_line_follow(15, 50);
+    gate_close(40);
     msleep(1000);
-    //set_servo_position(SERVO_GATE, SERVO_GATE_OPEN);  
+    gate_open(40);
+    
+    create_line_follow(10, 50);
+    gate_close(40);
+    msleep(1000);
+    gate_open(40);
+    gate_close(80);
 	
     //go towards middle of board and line up on middle bump
     arm_up();
+    servo_slow(SERVO_WRIST, SERVO_WRIST_UP);
     create_right(200, 100);
-    create_line_follow(50, 100);
+    create_line_follow(30, 100);
     msleep(100);
-    create_drive_direct(50, 50);
-    int ms = 0;
-    while (ms < 5000) 
-    {   
-        if (get_create_lbump() || get_create_rbump())
-        {
-            create_stop();
-        	break;
-        }
-    	msleep(1);
-        ms++;
-    }
+    create_detect_bump(50, 5000);
+    create_forward(25, 100);
 
     //going towards tram and dumping after getting the first round of poms
-    create_right(90,50);
+    create_right(100,50);
     msleep(100);
-    create_backward(25, 100);
-    create_square_up_line(50);
+    create_square_up_line(-50);
     msleep(100);
     servo_slow(SERVO_WRIST, SERVO_WRIST_UP);
     arm_up();
     msleep(1000);
-    create_forward(15,50); //42
+    create_forward(39,50); //42
     msleep(300);
-    create_right(30, 50);
-    msleep(300);
-    create_line_follow2(27,25);
-    gate_open();
+    gate_open(40);
     pom_release(); //THIS IS A TEST. DO NOT REMOVE
     pom_release();
     pom_release();
@@ -292,11 +280,11 @@ void arm_middle()
     servo_slow_2(SERVO_LEFT, SERVO_LEFT_MIDDLE, SERVO_RIGHT, SERVO_RIGHT_MIDDLE);
 }
 
-void gate_close()
+void gate_close(int speed)
 {
     //pushes poms in to the carrier
     cmpc(MOTOR_GATE);
-    motor(MOTOR_GATE, -40);
+    motor(MOTOR_GATE, -speed);
     while (gmpc(MOTOR_GATE) > -MOTOR_GATE_OPEN_DIST)
     {
         msleep(1);
@@ -304,21 +292,15 @@ void gate_close()
     off(MOTOR_GATE);
 }
 
-void gate_open() 
+void gate_open(int speed) 
 {
     cmpc(MOTOR_GATE);
-    motor(MOTOR_GATE, 40);
+    motor(MOTOR_GATE, speed);
     while (gmpc(MOTOR_GATE) < MOTOR_GATE_OPEN_DIST)
     {
         msleep(1);
     }
     off(MOTOR_GATE);
-}
-
-void open_gate()
-{
-    set_servo_position(SERVO_GATE, SERVO_GATE_OPEN);
-    msleep(300);
 }
 
 void arm_pickup_poms() 
@@ -521,7 +503,7 @@ void pom_release()
 {
     servo_slow(SERVO_WRIST, SERVO_WRIST_UP);
     msleep(100);
-    servo_slow(SERVO_WRIST, SERVO_WRIST_DUMP);
+    set_servo_position(SERVO_WRIST, SERVO_WRIST_DUMP);
     msleep(100);
 }
 
